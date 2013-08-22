@@ -810,10 +810,15 @@ makeOctokit = (_, jQuery, base64encode, userAgent) =>
           # Write file contents to a given branch and path
           # -------
           # To write base64 encoded data set `isBase64==true`
-          @write = (path, content, message="Changed #{path}", isBase64) =>
+          @write = (path, content, message="Changed #{path}", isBase64, latestCommitSha=null) =>
+            getLatestCommit = (branch) =>
+              if latestCommitSha
+                return (new jQuery.Deferred()).resolve(latestCommitSha)
+              return _git._updateTree(branch)
+
             _getRef()
             .then (branch) =>
-              _git._updateTree(branch)
+              getLatestCommit(branch)
               .then (latestCommit) =>
                 _git.postBlob(content, isBase64)
                 .then (blob) =>
